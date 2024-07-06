@@ -179,7 +179,7 @@ Ensure you have the following installed on your machine:
 
 - **📘 API Documentation:** 
   - `http://localhost:3000/api-docs`
-- **⚡ API Health Check*:**
+- **⚡ API Health Check:**
   - `http://localhost:3000/health`
 
 ## Contributing 🫱🏻‍🫲🏼
