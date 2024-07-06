@@ -1,7 +1,7 @@
 # Api-Template-With-Auth 🔐
 
 <div align="center">
-  <code>Built With:</code>
+  <code>Built With 👇🏾</code>
   <br />
   <br />
   <img src="https://img.shields.io/badge/Node.js-43853D?style=for-the-badge&logo=node.js&logoColor=white" alt="" />
@@ -28,7 +28,7 @@ It eliminates the need to write authentication code, saving you valuable time an
 - Express-Validator
 - Node Mailer
 
-### 🔥 Fun Fact! How I Made This project || Screenshots
+### 🤓 Fun Fact! How I Made This project || Screenshots
 
 <details>
   <summary>
@@ -98,11 +98,12 @@ If you think you need a PC to start coding, think again! With just an Android ph
 - 🔐 **Change Password**: Allow users to securely change their passwords.
 - ️🐞 **Graceful Error Handling**: Consistent and informative error responses.
 - 📃 **Documentation**: A comprehensive documentation with `swagger`.
-- 🚀 And Much More
+- 🚀 **And Much More**
 
-> [!WARNING]
+> [!IMPORTANT]
 > Please note that the **API Documentation** is currently a work in progress. Proper API documentation using Swagger is not yet complete. This means some endpoints may not be fully documented. 
 
+> [!NOTE]
 > *Im working on completing this documentation to provide a more comprehensive guide for using This Api Template.*
 
 ### Live Demo 🎉
@@ -178,7 +179,7 @@ Ensure you have the following installed on your machine:
 
 - **📘 API Documentation:** 
   - `http://localhost:3000/api-docs`
-- **⚡ API Health Check*:*
+- **⚡ API Health Check*:**
   - `http://localhost:3000/health`
 
 ## Contributing 🫱🏻‍🫲🏼
