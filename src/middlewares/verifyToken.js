@@ -15,7 +15,8 @@ const verifyToken =
         jwt.verify(token, JWT_SECRET, (err, user) => {
             if (err || (requiredRole && user.role !== requiredRole) ) {
                 const message = err ? "👽 Authentication failed: Anomaly detected!" : "🚫 Access denied: Insufficient permissions.";
-                throw new ApiError(401, message);
+                
+                throw new ApiError(err ? 401 : 403, message);
             }
 
             req.user = user;
