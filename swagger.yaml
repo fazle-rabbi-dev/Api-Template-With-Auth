@@ -1,13 +1,48 @@
 openapi: 3.0.0
 info:
-  title: Bazaar-Hub 🛍️ E-commerce REST API
+  title: Api-Template-With-Auth 🔐
   version: 1.0.0
-  description: A REST API for an e-commerce platform.
+  description: A robust and versatile REST API template with the setup of Authentication and User Management to streamline the process of creating REST APIs using Express.js & MongoDB.
 servers:
   - url: http://localhost:3000/api/v1
     description: Local server
 
 paths:
+  # Seed Routes
+  /seed/users:
+    post:
+      summary: Seed Users
+      tags: [SEED Routes]
+      responses:
+        "201":
+          description: Users added successfully.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  statusCode:
+                    type: number
+                    example: 200
+                  data:
+                    type: object
+                    properties:
+                      users:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            fullName:
+                              type: string
+                            username:
+                              type: string
+                            email:
+                              type: string
+                    example:
+                      users: [user 1, user 2, user 3]
+  
   # Auth Api's
   /auth/register:
     post:
@@ -33,12 +68,12 @@ paths:
                   type: string
                 password:
                   type: string
-                avatar: 
+                avatar:
                   type: binary
       responses:
-        '201':
+        "201":
           description: User registered successfully.
-        '400':
+        "400":
           description: Invalid input.
 
   /auth/login:
@@ -62,15 +97,17 @@ paths:
                 password:
                   type: string
       responses:
-        '200':
+        "200":
           description: User logged in successfully
-        '400':
+        "400":
           description: Invalid input
-  
+
   /auth/refresh-token:
     patch:
       summary: Refresh access token
       tags: [Auth]
+      security:
+        - bearerAuth: []
       requestBody:
         required: true
         content:
@@ -86,14 +123,14 @@ paths:
                 userId:
                   type: string
       responses:
-        '200':
+        "200":
           description: Access token refreshed successfully
-        '400':
+        "400":
           description: Invalid input
-        '401':
+        "401":
           description: The refresh token provided is invalid or has expired
-  
-  # Users Api's
+
+  # Users Management Api's
   /users/confirm-account:
     get:
       summary: Confirm user account
@@ -109,17 +146,17 @@ paths:
           required: true
           schema:
             type: string
-      
+
       responses:
-        '200':
+        "200":
           description: Account confirmed successfully
-        '400':
+        "400":
           description: Invalid input
-        '404':
+        "404":
           description: User not found
-        '401':
+        "401":
           description: Token is invalid or has expired
-    
+
   /users/resend-confirmation-email:
     get:
       summary: Resend confirmation email
@@ -130,11 +167,11 @@ paths:
           required: true
           schema:
             type: string
-      
+
       responses:
-        '200':
+        "200":
           description: Confirmation email resent successfully
-        '400':
+        "400":
           description: Invalid input
 
   /users/forgot-password:
@@ -148,9 +185,9 @@ paths:
           schema:
             type: string
       responses:
-        '200':
+        "200":
           description: Password reset link sent successfully
-        '400':
+        "400":
           description: Invalid email address
 
   /users/reset-password:
@@ -180,17 +217,17 @@ paths:
                 confirmPassword:
                   type: string
       responses:
-        '200':
+        "200":
           description: Password reset successfully
-        '400':
-          $ref: '#/components/responses/InvalidInput'
-        '401':
-          $ref: '#/components/responses/TokenInvalidOrExpired'
-        '404':
-          $ref: '#/components/responses/UserNotFound'
-      
+        "400":
+          $ref: "#/components/responses/InvalidInput"
+        "401":
+          $ref: "#/components/responses/TokenInvalidOrExpired"
+        "404":
+          $ref: "#/components/responses/UserNotFound"
+
   /users/change-email:
-    post:
+    put:
       summary: Change user email
       tags: [Users]
       security:
@@ -204,29 +241,45 @@ paths:
               properties:
                 newEmail:
                   type: string
+                password:
+                  type: string
       responses:
-        '200':
+        "200":
           description: Email change request sent successfully
+        "400":
+          $ref: "#/components/responses/InvalidInput"
+        "401":
+          $ref: "#/components/responses/TokenInvalidOrExpired"
+        "409":
+          description: New email is already in use by someone else. Please try a different email
 
   /users/confirm-change-email:
-    post:
+    patch:
       summary: Confirm email change
       tags: [Users]
       requestBody:
         required: true
-        content:
-          application/json:
+        parameters:
+          - name: userId
+            in: query
+            required: true
             schema:
-              type: object
-              properties:
-                token:
-                  type: string
+              type: string
+          - name: confirmationToken
+            in: query
+            required: true
+            schema:
+              type: string
       responses:
-        '200':
-          description: Email change confirmed successfully
+        "200":
+          description: Email changed successfully
+        "400":
+          $ref: "#/components/responses/InvalidInput"
+        "401":
+          $ref: "#/components/responses/TokenInvalidOrExpired"
 
   /users/change-password:
-    post:
+    patch:
       summary: Change user password
       tags: [Users]
       security:
@@ -238,47 +291,61 @@ paths:
             schema:
               type: object
               properties:
-                currentPassword:
+                oldPassword:
                   type: string
                 newPassword:
                   type: string
+                confirmPassword:
+                  type: string
       responses:
-        '200':
+        "200":
           description: Password changed successfully
+        "400":
+          $ref: "#/components/responses/InvalidInput"
+        "401":
+          $ref: "#/components/responses/TokenInvalidOrExpired"
 
   /users:
     get:
       summary: Get all users (admin only)
+      tags: [Users]
       security:
-        - bearerAuth: []
+        - bearerAuth: ["admin"]
       responses:
-        '200':
+        "200":
           description: List of all users retrieved successfully
-        '403':
+        "403":
           description: Forbidden
 
   /users/{id}:
     get:
       summary: Get single user (admin & logged-in user)
+      tags: [Users]
       security:
         - bearerAuth: []
       parameters:
-        - name: id
+        - name: userId
           in: path
           required: true
           schema:
             type: string
       responses:
-        '200':
+        "200":
           description: User details retrieved successfully
-        '403':
+        "400":
+          $ref: "#/components/responses/InvalidInput"
+        "401":
+          $ref: "#/components/responses/TokenInvalidOrExpired"
+        "403":
           description: Forbidden
+
     put:
       summary: Update account details (logged-in user)
+      tags: [Users]
       security:
         - bearerAuth: []
       parameters:
-        - name: id
+        - name: userId
           in: path
           required: true
           schema:
@@ -294,361 +361,81 @@ paths:
                   type: string
                 username:
                   type: string
-                email:
-                  type: string
       responses:
-        '200':
+        "200":
           description: User details updated successfully
+        "400":
+          $ref: "#/components/responses/InvalidInput"
+        "401":
+          $ref: "#/components/responses/TokenInvalidOrExpired"
+        "409":
+          description: Username is already in use by someone else. Please try a different username
+
     delete:
       summary: Delete account (admin only)
+      tags: [Users]
       security:
         - bearerAuth: []
       parameters:
-        - name: id
+        - name: userId
           in: path
           required: true
           schema:
             type: string
       responses:
-        '200':
+        "200":
           description: User account deleted successfully
-        '403':
+        "400":
+          $ref: "#/components/responses/InvalidInput"
+        "401":
+          $ref: "#/components/responses/TokenInvalidOrExpired"
+        "403":
           description: Forbidden
 
   /users/profile/{id}:
     get:
       summary: Get user profile (public)
+      tags: [Users]
       parameters:
-        - name: id
+        - name: userId
           in: path
           required: true
           schema:
             type: string
       responses:
-        '200':
+        "200":
           description: User profile retrieved successfully
+        "400":
+          $ref: "#/components/responses/InvalidInput"
 
-  /users/manage-user-status:
-    post:
+  /users/manage-user-status/{userid}:
+    patch:
       summary: Manage user status (admin only [ban/unban] user)
+      tags: [Users]
       security:
         - bearerAuth: []
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              type: object
-              properties:
-                userId:
-                  type: string
-                status:
-                  type: string
-                  enum: [banned, active]
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: action
+          in: query
+          required: true
+          schema:
+            type: string
+            enum: [ban, unban] # Adding required values for the action parameter
       responses:
-        '200':
+        "200":
           description: User status updated successfully
-        '403':
+        "400":
+          $ref: "#/components/responses/InvalidInput"
+        "401":
+          $ref: "#/components/responses/TokenInvalidOrExpired"
+        "403":
           description: Forbidden
-  
-  # Products Api's
-  /products:
-    post:
-      summary: Create a new product
-      tags: [Products]
-      security:
-        - bearerAuth: []
-      requestBody:
-        required: true
-        content:
-          multipart/form-data:
-            schema:
-              type: object
-              required:
-                - name
-                - description
-                - price
-                - stock
-              properties:
-                name:
-                  type: string
-                description:
-                  type: string
-                price:
-                  type: number
-                stock:
-                  type: integer
-                image:
-                  type: string
-                  format: binary
-      responses:
-        '201':
-          description: Product created successfully
-        '400':
-          description: Invalid input
 
-    get:
-      summary: Get all products
-      tags: [Products]
-      responses:
-        '200':
-          description: Products retrieved successfully
-  
-  /products/{id}:
-    get:
-      summary: Get a single product by ID
-      tags: [Products]
-      parameters:
-        - name: id
-          in: path
-          required: true
-          schema:
-            type: string
-      responses:
-        '200':
-          description: Product retrieved successfully
-        '404':
-          description: Product not found
-
-    put:
-      summary: Update a product by ID
-      tags: [Products]
-      security:
-        - bearerAuth: []
-      parameters:
-        - name: id
-          in: path
-          required: true
-          schema:
-            type: string
-      requestBody:
-        required: true
-        content:
-          multipart/form-data:
-            schema:
-              type: object
-              properties:
-                name:
-                  type: string
-                description:
-                  type: string
-                price:
-                  type: number
-                stock:
-                  type: integer
-                image:
-                  type: string
-                  format: binary
-      responses:
-        '200':
-          description: Product updated successfully
-        '400':
-          description: Invalid input
-        '404':
-          description: Product not found
-
-    delete:
-      summary: Delete a product by ID
-      tags: [Products]
-      security:
-        - bearerAuth: []
-      parameters:
-        - name: id
-          in: path
-          required: true
-          schema:
-            type: string
-      responses:
-        '200':
-          description: Product deleted successfully
-        '404':
-          description: Product not found
-  
-  # Categories
-  
-  # Orders
-  /orders:
-    post:
-      summary: Create a new order
-      tags: [Orders]
-      security:
-        - bearerAuth: []
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              type: object
-              required:
-                - products
-                - totalPrice
-              properties:
-                products:
-                  type: array
-                  items:
-                    type: object
-                    properties:
-                      productId:
-                        type: string
-                      quantity:
-                        type: integer
-                totalPrice:
-                  type: number
-      responses:
-        '201':
-          description: Order created successfully
-        '400':
-          description: Invalid input
-
-    get:
-      summary: Get all orders
-      tags: [Orders]
-      security:
-        - bearerAuth: []
-      responses:
-        '200':
-          description: Orders retrieved successfully
-  
-  /orders/{id}:
-    get:
-      summary: Get a single order by ID
-      tags: [Orders]
-      security:
-        - bearerAuth: []
-      parameters:
-        - name: id
-          in: path
-          required: true
-          schema:
-            type: string
-      responses:
-        '200':
-          description: Order retrieved successfully
-        '404':
-          description: Order not found
-
-    put:
-      summary: Update order status by ID
-      tags: [Orders]
-      security:
-        - bearerAuth: []
-      parameters:
-        - name: id
-          in: path
-          required: true
-          schema:
-            type: string
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              type: object
-              required:
-                - status
-              properties:
-                status:
-                  type: string
-      responses:
-        '200':
-          description: Order status updated successfully
-        '400':
-          description: Invalid input
-        '404':
-          description: Order not found
-
-  # Cart Api
-  /cart:
-    post:
-      summary: Add product to cart
-      tags: [Cart]
-      security:
-        - bearerAuth: []
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              type: object
-              required:
-                - productId
-                - quantity
-              properties:
-                productId:
-                  type: string
-                quantity:
-                  type: integer
-      responses:
-        '201':
-          description: Product added to cart
-        '400':
-          description: Invalid input
-
-    get:
-      summary: Get cart items
-      tags: [Cart]
-      security:
-        - bearerAuth: []
-      responses:
-        '200':
-          description: Cart items retrieved successfully
-
-    delete:
-      summary: Clear cart
-      tags: [Cart]
-      security:
-        - bearerAuth: []
-      responses:
-        '200':
-          description: Cart cleared successfully
-
-  /cart/{id}:
-    put:
-      summary: Update cart item quantity
-      tags: [Cart]
-      security:
-        - bearerAuth: []
-      parameters:
-        - name: id
-          in: path
-          required: true
-          schema:
-            type: string
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              type: object
-              required:
-                - quantity
-              properties:
-                quantity:
-                  type: integer
-      responses:
-        '200':
-          description: Cart item updated successfully
-        '400':
-          description: Invalid input
-        '404':
-          description: Cart item not found
-
-    delete:
-      summary: Delete cart item
-      tags: [Cart]
-      security:
-        - bearerAuth: []
-      parameters:
-        - name: id
-          in: path
-          required: true
-          schema:
-            type: string
-      responses:
-        '200':
-          description: Cart item deleted successfully
-        '404':
-          description: Cart item not found
 
 components:
   securitySchemes:
@@ -666,46 +453,6 @@ components:
           type: string
         email:
           type: string
-    Product:
-      type: object
-      properties:
-        id:
-          type: string
-        name:
-          type: string
-        description:
-          type: string
-        price:
-          type: number
-        stock:
-          type: integer
-    Order:
-      type: object
-      properties:
-        id:
-          type: string
-        products:
-          type: array
-          items:
-            type: object
-            properties:
-              productId:
-                type: string
-              quantity:
-                type: integer
-        totalPrice:
-          type: number
-        status:
-          type: string
-    CartItem:
-      type: object
-      properties:
-        id:
-          type: string
-        productId:
-          type: string
-        quantity:
-          type: integer
   responses:
     InvalidInput:
       description: Invalid input
@@ -713,4 +460,3 @@ components:
       description: User not found
     TokenInvalidOrExpired:
       description: Token is invalid or has expired
-      
